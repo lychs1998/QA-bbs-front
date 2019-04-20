@@ -20,7 +20,7 @@
         <Drawer
             title="创建问题"
             v-model="openEdit"
-            width="720"
+            width="40%"
             :mask-closable="false"
             :styles="styles"
         >
@@ -28,17 +28,17 @@
                 <FormItem label="问题" label-position="top">
                     <Input v-model="formData.question" placeholder="不妨先搜索一下？" />
                 </FormItem>
-                <FormItem label="问题描述" label-position="top">
-                    <Input type="textarea" v-model="formData.detail" :rows="20" placeholder="问题的描述" />
+                <FormItem label="问题描述" label-position="top" >
+                    <mavon-editor style="height:800px;width:100%"  v-model="formData.detail"></mavon-editor>
                 </FormItem>
-                <FormItem label="标签" label-position="top">
+                <FormItem v-if="false" label="标签" label-position="top">
                     <Input v-model="formData.tags" placeholder="话题与话题之间使用英文逗号隔开" />
                 </FormItem>
+                <FormItem>
+                    <Button style="margin-right: 8px" @click="openEdit = false">取消</Button>
+                    <Button type="primary" @click="handlerQues('formData')">提交</Button>
+                </FormItem>
             </Form>
-            <div class="demo-drawer-footer">
-                <Button style="margin-right: 8px" @click="openEdit = false">取消</Button>
-                <Button type="primary" @click="handlerQues('formData')">提交</Button>
-            </div>
         </Drawer>
     </div>         
     </Menu>
