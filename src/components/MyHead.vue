@@ -27,11 +27,11 @@
                 <Col :xs="24" :sm="24" :md="18" :lg="16">           
                     <div class="layout-logo"></div>
                     <div class="layout-nav">
-                        <a @click="modal8 = true"><Avatar :style="{background: handleColor}">{{ user }}</Avatar></a>  
+                        <a @click="loginModal = true"><Avatar :style="{background: handleColor}" size="large">{{ user }}</Avatar></a>  
                     </div>
                 </Col>
             </Row>
-            <Modal  title="登录" okText="登录" @on-ok="handleSubmit('formInline')" v-model="modal8">
+            <Modal  title="登录" okText="登录" @on-ok="handleSubmit('formInline')" v-model="loginModal">
                 <Form ref="formInline" :model="formInline" :rules="ruleInline" inline>
                     <FormItem prop="user">
                         <Input type="text" v-model="formInline.user" placeholder="Username">
@@ -50,14 +50,13 @@
 <script>
     const ColorList = ['#f56a00', '#7265e6', '#ffbf00', '#00a2ae'];
 
-
     export default {
         data () {
             return {
                 theme1: 'light',
                 user:'登录',
                 login:'login',
-                modal8: false,
+                loginModal: false,
                 formInline: {
                     user: '',
                     password: ''
@@ -83,7 +82,10 @@
                 this.$refs[p].validate((valid) => {
                     if (valid) {
                         //表单发送后端
-                        var isLogin=true;
+                        const isLogin=true;
+                        //session存入uid
+                        const uid="1";
+                        window.sessionStorage.setItem("uid",uid);
                         if(isLogin){
                             this.$Message.success('登录成功!');
                         }else{

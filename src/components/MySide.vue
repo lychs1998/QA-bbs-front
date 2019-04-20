@@ -1,14 +1,14 @@
 <template>
-    <Menu style="width:100%;height:100%">
+    <Menu style="width:100%;height:100%" :active-name="activeName">
         <div style="text-align:center">
-            <Input v-model="value" icon="ios-search" placeholder="搜索你想要的答案" style="align:center;width:90%;margin-top:10px;margin-bottom:10px"/>
+            <Input v-model="search" icon="ios-search" placeholder="搜索你想要的答案" style="align:center;width:90%;margin-top:10px;margin-bottom:10px"/>
             <Button type="primary" style="width:90%;margin-top:10px;margin-bottom:10px" @click="openEdit = true">我要提问</Button>
         </div>
-        <MenuItem name="1" >
+        <MenuItem name="/" to="/">
             <Icon type="ios-home" />
             首页
         </MenuItem>
-        <MenuItem name="2">
+        <MenuItem name="2" >
             <Icon type="ios-people" />
             课堂
         </MenuItem>
@@ -49,21 +49,17 @@
             return {
                 openEdit: false,
                 styles: {
-                    height: 'calc(100% - 55px)',
                     overflow: 'auto',
                     paddingBottom: '53px',
                     position: 'static'
                 },
                 formData: {
-                    name: '',
-                    url: '',
-                    owner: '',
-                    type: '',
-                    approver: '',
-                    date: '',
-                    desc: ''
+                    question:'',
+                    detail:'',
+                    tags:''
                 },
-                value: ''
+                search: '',
+                activeName:this.$route.path
             }
         },
         methods:{
@@ -73,6 +69,11 @@
                     this.$Message.success('问题已创建！');
                     this.openEdit=false;
                 }
+            }
+        },
+        watch:{
+            '$route'(){
+                this.activeName=this.$route.path;
             }
         }
     }

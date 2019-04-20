@@ -27,7 +27,7 @@
                     <MySide></MySide>
                 </Col>
                 <Col :xs="24" :sm="24" :md="8" :lg="16" style="height:100%">
-                    <MyItem></MyItem>
+                    <router-view/>
                 </Col>
                 <Col :xs="0" :sm="0" :md="8" :lg="4" style="height:100%">
                     <RightSide></RightSide>
@@ -40,7 +40,6 @@
 <script>
     import MySide from "@/components/MySide.vue";
     import MyHead from "@/components/MyHead.vue";
-    import MyItem from "@/components/MyItem.vue";
     import RightSide from "@/components/RightSide.vue";
     export default {
         name: 'app',
@@ -52,7 +51,6 @@
         components: {
             MySide,
             MyHead,
-            MyItem,
             RightSide
         },
         mounted(){
