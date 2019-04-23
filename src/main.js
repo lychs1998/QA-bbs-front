@@ -7,7 +7,6 @@ import router from './router'
 // use
 Vue.use(mavonEditor)
 Vue.config.productionTip = false
-mavonEditor.markdownIt
 
 router.beforeEach((to,from,next)=>{
     if(to.meta.type==='login'){
