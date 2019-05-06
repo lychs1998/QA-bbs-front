@@ -9,18 +9,17 @@ export default new Router({
     {
       path: '/',
       name: 'home',
-      meta:{
-        type:''
-      },
       component: Home
     },
     {
-      path: '/pleaseLogin',
-      name: 'pleaseLogin',
-      meta:{
-        type:''
-      },
-      component: () => import('./views/PleaseLogin.vue')
+      path: '/question/:id',
+      name: 'qusetion',
+      component: () => import('./views/Question.vue')
+    },
+    {
+      path: '*',
+      name:'404',
+      component:()=>import('./views/404.vue')
     }
   ]
 })
