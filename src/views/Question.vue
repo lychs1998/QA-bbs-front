@@ -1,78 +1,163 @@
 <template>
-    <div style="margin: 32px 0;margin-left:20px;margin-right:20px;">
-        <Card dis-hover>
-            <h3 slot="title">{{question}}</h3>
-            <div v-html="mdtoHtml(detail)"></div>
-            <Divider />
-            <p style="text-align:right"><b>By&nbsp;{{username}}&nbsp;&nbsp;{{createtime}}</b></p>
-        </Card>
-        <Card style="margin:20px 0" dis-hover>
-            <div v-for="(ans,index) in answers" :key="index">
-                <Divider orientation="left"><b>{{ans.username}}&nbsp;&nbsp;{{ans.createtime}}</b></Divider>
-                <div v-html="mdtoHtml(ans.answer)"></div>
-            </div>
-            <Divider orientation="left"><b>我要回答</b></Divider>
-            <div>
-                <Form v-if="!isNotLogin">
-                    <FormItem label="" label-position="top" >
-                        <mavon-editor :toolbars="toolbars" style="height:300px;width:100%;z-index:0"  v-model="reply"></mavon-editor>
-                    </FormItem>
-                    <FormItem>
-                        <Button style="margin-right: 8px" @click="openEdit = false">取消</Button>
-                        <Button type="primary" @click="handlerRe(reply)">提交</Button>
-                    </FormItem>
-                </Form>
-                <h3 v-else style="text-align:center">
-                    请先登录
-                </h3>
-            </div>
-        </Card>
-        <Spin size="large" fix v-if="spinShow"></Spin>
-    </div>
+  <v-layout
+    justify-left
+    >
+    <v-timeline dense clipped style="width:100%" >
+      <v-slide-x-reverse-transition
+        group
+      >
+        <v-timeline-item
+        hide-dot
+        key="ques"
+        >
+        <span>问题</span>
+        </v-timeline-item>
+        <v-timeline-item
+          color="blue lighten-2"
+          large
+          fill-dot
+          key="question"
+        >
+          <template v-slot:icon>
+            <v-avatar style="color:#fff" >
+              {{username}}
+            </v-avatar>
+          </template>
+          <v-card
+            color="#fff"
+          >
+            <v-card-title style="background-color:#E3F2FD">
+              <span class="title font-weight-light">{{question}}</span>
+            </v-card-title>
+            <v-card-text class="font-weight-light" v-html="mdtoHtml(detail)"/>
+            <v-divider/>
+            <v-card-actions>
+              <v-list-tile class="grow">
+                <v-list-tile-content class="hidden-sm-and-down">
+                  <v-list-tile-title>{{showtime}}</v-list-tile-title>
+                </v-list-tile-content>
+                <v-layout
+                  align-center
+                  justify-end
+                >
+                <v-btn icon @click="changeType(-1)">
+                  <v-icon color="red">{{starType}}</v-icon>
+                </v-btn>
+                <span>{{star}}</span>
+                  &nbsp;
+                  <v-icon color="black">remove_red_eye</v-icon>
+                  &nbsp;
+                  <span>{{pageviews}}</span>
+                </v-layout>
+              </v-list-tile>
+            </v-card-actions>
+          </v-card>
+        </v-timeline-item>
+        <v-timeline-item
+        hide-dot
+        key="ans"
+        v-if="answers.length>0"
+        >
+        <span>回答</span>
+        </v-timeline-item>
+        <v-timeline-item
+          v-for="(item,index) in answers"
+          :key="index+1"
+          :color="itemColor(index)"
+          fill-dot
+          large
+        >
+          <template v-slot:icon>
+            <v-avatar style="color:#fff" >
+              {{item.username}}
+            </v-avatar>
+          </template>
+          <v-card
+            color="#fff"
+          >
+            <v-card-text class="font-weight-light" v-html="mdtoHtml(item.answer)"/>
+            <v-divider/>
+            <v-card-actions>
+              <v-list-tile class="grow">
+                <v-list-tile-content class="hidden-sm-and-down">
+                  <v-list-tile-title>{{item.showtime}}</v-list-tile-title>
+                </v-list-tile-content>
+                <v-layout
+                  align-center
+                  justify-end
+                >
+                  <v-btn icon @click="changeType(index)">
+                    <v-icon color="amber">{{item.starType}}</v-icon>
+                  </v-btn>
+                  <span>{{item.star}}</span>
+                </v-layout>
+              </v-list-tile>
+            </v-card-actions>
+          </v-card>
+        </v-timeline-item>
+        <v-timeline-item
+          color="purple lighten-2"
+          fill-dot
+          large
+          key="reply"
+        >
+          <template v-slot:icon>
+            <v-avatar style="color:#fff" >
+              回答
+            </v-avatar>
+          </template>
+          <v-card color="#fff">
+            <v-form>
+              <mavon-editor ref=md class="hidden-sm-and-down" @imgAdd="$imgAdd" :boxShadow="false" :externalLink="false" :toolbars="toolbars" style="width:100%;z-index:3"  v-model="reply"></mavon-editor>
+              <mavon-editor ref=md class="hidden-sm-and-up" @imgAdd="$imgAdd" defaultOpen="edit" :boxShadow="false" :subfield="false" :externalLink="false"  :toolbars="{imagelink: true,preview: true}"  style="width:100%;z-index:3;min-width:0px"  v-model="reply"></mavon-editor>
+              <v-card-actions>
+                <v-spacer></v-spacer>
+                <v-btn color="primary" style="margin-right: 8px"  @click="replyQues(reply)">提交</v-btn>
+              </v-card-actions>
+              </v-form>
+          </v-card>
+        </v-timeline-item>
+      </v-slide-x-reverse-transition>
+    </v-timeline>
+    <v-snackbar
+      v-model="snackbar"
+      :timeout="2000"
+      top
+    >
+      {{ text }}
+      <v-btn
+        color="pink"
+        flat
+        @click="snackbar = false"
+      >
+        Close
+      </v-btn>
+    </v-snackbar>
+  </v-layout>
 </template>
+
 <script>
 import {mavonEditor} from 'mavon-editor'
-
-
 export default {
     data(){
         return  {
+            snackbar:false,
+            text:'',
             isNotLogin:true,
-            spinShow:true,
             questionID:'',
             username:'',
             userID:'',
             question:'',
+            pageviews:0,
             detail:'',
-            createtime:'',
+            star:'',
+            showtime:'',
             answers:[],
             reply:'',
-            toolbars: {
-                bold: true, // 粗体
-                italic: true, // 斜体
-                header: true, // 标题
-                underline: true, // 下划线
-                strikethrough: true, // 中划线
-                mark: true, // 标记
-                superscript: true, // 上角标
-                subscript: true, // 下角标
-                quote: true, // 引用
-                ol: true, // 有序列表
-                ul: true, // 无序列表
-                link: true, // 链接
-                imagelink: false, // 图片链接
-                code: true, // code
-                table: true, // 表格
-                help: true, // 帮助
-                undo: true, // 上一步
-                redo: true, // 下一步
-                trash: true, // 清空
-                alignleft: true, // 左对齐
-                aligncenter: true, // 居中
-                alignright: true, // 右对齐
-                subfield: true, // 单双栏模式
-                preview: true, // 预览
-            }
+            isStar:0,
+            starType:'md-heart-outline',
+            screenWidth:document.documentElement.clientWidth,
+            colors:['red','pink','indigo','cyan','teal','lime','green','orange','brown','grey']
         }
     },
     created(){
@@ -81,47 +166,137 @@ export default {
     methods:{
         mdtoHtml(detail){
             var md=mavonEditor.getMarkdownIt();
-            return md.render(detail.toString());
+            return md.render(String(detail));
         },
         initData(){
             this.questionID=this.$route.params.id;
             if(this.$cookie.get('token')!==null){
                 this.isNotLogin=false;
             }
-            this.$axios.post("question/questionDetail",{questionID:this.questionID})
+            this.$axios.post("question/questionDetail",{questionID:parseInt(this.questionID),token:this.$cookie.get('token')})
             .then(function(response){
                 this.question=response.data.question;
                 this.detail=response.data.detail;
+                this.pageviews=response.data.pageviews;
                 this.userID=response.data.userID;
                 this.username=response.data.userName;
-                this.createtime=response.data.showTime;
+                this.showtime=response.data.showTime;
+                this.star=response.data.star;
+                this.starType=(response.data.starOrNot===1)?'favorite':'favorite_border';
+                this.isStar=(response.data.starOrNot===1)
                 response.data.answers.forEach(e => {
                     var ans={};
                     ans.answerID=e.answerID;
                     ans.userID=e.userID;
                     ans.username=e.userName;
                     ans.answer=e.answer;
-                    ans.createtime=e.showTime;
+                    ans.showtime=e.showTime;
+                    ans.star=e.star;
+                    ans.isStar=(e.starOrNot===1);
+                    ans.starType=(e.starOrNot===1) ? 'star':'star_border';
                     this.answers.push(ans);
                 });
-                this.spinShow=false;
             }.bind(this));
         },
-        handlerRe(){
+        replyQues(){
+            if(this.isNotLogin){
+              this.text="请先登录";
+              this.snackbar=true;
+              return;
+            }
             if(this.reply===''){
-                this.$Message.warning('回答内容不能为空！');
-                return;
+              this.text="请输入回答内容";
+              this.snackbar=true;
+              return;
             }
             this.$axios.post("answer/addAnswer",{token:this.$cookie.get('token'),questionID:parseInt(this.questionID),answer:this.reply})
             .then(function(response){
                 if(response.data.code===0){
-                    this.$Message.success('回答成功！');
+                  this.text="回答成功！";
+                  this.snackbar=true;
                 }else{
-                    this.$Message.error('回答失败！')
+                  this.text="回答失败！";
+                  this.snackbar=true;
                 }
                 this.$router.go(0);
             }.bind(this));
+        },
+        changeType(flag){
+            if(flag===-1){
+                this.isStar=!this.isStar;
+                if(this.isStar){
+                    //post收藏问题接口
+                    this.$axios.post("question/qstar",{token:this.$cookie.get('token'),questionID:parseInt(this.questionID)})
+                    .then(function(response){
+                      if(response.status===200){
+                        this.starType='favorite';
+                        this.star++;
+                      }
+                    }.bind(this));
+                }else{
+                    //post取消收藏问题接口
+                    this.$axios.post("question/qstar",{token:this.$cookie.get('token'),questionID:parseInt(this.questionID)})
+                    .then(function(response){
+                      if(response.status===200){
+                      this.starType='favorite_border';
+                      this.star--;
+                      }
+                    }.bind(this));
+                }
+            }else{
+                this.answers[flag].isStar=!this.answers[flag].isStar;
+                if(this.answers[flag].isStar){
+                    //post支持回答接口
+                    this.$axios.post("answer/astar",{token:this.$cookie.get('token'),answerID:parseInt(this.answers[flag].answerID)})
+                    .then(function(response){
+                      if(response.status===200){
+                        this.answers[flag].starType='star';
+                        this.answers[flag].star++;
+                      }
+                    }.bind(this));
+
+                }else{
+                    //post取消支持回答接口
+                    this.$axios.post("answer/astar",{token:this.$cookie.get('token'),answerID:parseInt(this.answers[flag].answerID)})
+                    .then(function(response){
+                      if(response.status===200){
+                      this.answers[flag].starType='star_border';
+                      this.answers[flag].star--;
+                      }
+                    }.bind(this));
+                    
+                }
+            }
+        },
+        itemColor(i){
+          var index=parseInt(i);
+          if(isNaN(index)){
+            index=0;
+          }
+          return this.colors[index%10]+' lighten-3';
+        },
+        $imgAdd(pos,$file){
+          if(this.$cookie.get('token')===null){
+              this.text='请先登录！';
+              this.snackbar=true;
+              return;
+          }
+          var formdata = new FormData();
+          formdata.append('file', $file);
+          formdata.append('token',this.$cookie.get('token'));
+          this.$axios.post('img/addPhoto',formdata,{headers: { 'Content-Type': 'multipart/form-data' }})
+          .then(function(response){
+              if(response.data.code===0){
+                const url='api/images/'+response.data.url;
+                this.$refs.md.$img2Url(pos,url);
+              }
+          }.bind(this))
         }
+    },
+    computed:{
+      toolbars(){
+        return this.$store.state.toolbars;
+      }
     }
 }
 </script>

@@ -1,28 +1,40 @@
 import Vue from 'vue'
+import './plugins/vuetify'
 import App from './App.vue'
-import './plugins/iview.js'
+import router from './router'
+import store from './store'
+import Axios from 'axios'
+import VueCookie from 'vue-cookie'
 import mavonEditor from 'mavon-editor'
 import 'mavon-editor/dist/css/index.css'
-import router from './router'
-import VueCookie from 'vue-cookie'
-import Axios from 'axios'
+import 'material-design-icons-iconfont/dist/material-design-icons.css'
 
-
-
-// use
-Vue.use(mavonEditor);
-Vue.use(VueCookie);
-Vue.config.productionTip = false;
-Axios.defaults.baseURL = 'http://localhost/api';
+Vue.config.productionTip = false
+Axios.defaults.baseURL = 'api';
 Axios.defaults.headers.post['Content-Type'] = 'application/json';
-Axios.defaults.proxy={
-  host: 'localhost',
-  port: 8080
-}
 Vue.prototype.$axios = Axios;
 
+Vue.use(mavonEditor);
+Vue.use(VueCookie);
+
+router.beforeEach((to, from, next) => {
+  if(to.meta.needLogin){
+    if(Vue.prototype.$cookie.get('token')!==null){
+      next();
+    }else{
+      next('/login');
+    }
+  }else{
+    if(to.meta.login&&Vue.prototype.$cookie.get('token')!==null){
+      next('/');
+    }else{
+      next();
+    }
+  }
+})
 
 new Vue({
   router,
+  store,
   render: h => h(App)
 }).$mount('#app')

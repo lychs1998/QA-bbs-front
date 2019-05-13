@@ -1,19 +1,11 @@
 <template>
-  <Card style="margin:20px 20px;">
-    <h1 style="text-align:center;margin:100px 0" slot="title">404 Page Not Found</h1>
-    <h2 id="hitokoto" style="text-align:center">:D 获取中...</h2>
-  </Card>
+  <v-layout align-center justify-center>
+    <v-flex xs12 sm8 md4>
+        <h1 style="text-align:center">404 Page Not Found</h1>
+    </v-flex>
+  </v-layout>
 </template>
 <script>
-  fetch('https://v1.hitokoto.cn')
-    .then(function (res){
-      return res.json();
-    })
-    .then(function (data) {
-      var hitokoto = document.getElementById('hitokoto');
-      hitokoto.innerText = data.hitokoto; 
-    })
-
 export default {
   
 }

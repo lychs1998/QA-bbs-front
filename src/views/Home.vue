@@ -1,82 +1,135 @@
 <template>
-    <div style="height:100%">
-    <Scroll :on-reach-bottom="handleReachBottom" :height="clientHeight2">
-        <h1 v-if="isNone" style="text-align:center;margin:100px 0">还没有人提问</h1>
-        <Card dis-hover  v-for="(item, index) in ques" :key="index" style="margin: 32px 0;margin-left:20px;margin-right:20px" >
-            <CellGroup slot="title">
-                <Cell :title="item.question"  :to="handlegoTo(item.questionID)" />
-            </CellGroup>
-            <div v-html="mdtoHtml(item.detail)"></div>
-        </Card>
-        <Spin size="large" fix v-if="spinShow"></Spin>
-    </Scroll>
-    </div>
+  <v-layout
+    justify-left
+    v-scroll="onScroll"
+    >
+    <v-timeline dense clipped style="width:100%" >
+      <v-slide-x-reverse-transition
+        group
+      >
+        <v-timeline-item
+          v-for="(item,index) in ques"
+          :key="index+1"
+          :color="itemColor(item.userID)"
+          large
+          fill-dot
+        >
+          <template v-slot:icon>
+            <v-avatar style="color:#fff" >
+              {{item.username}}
+            </v-avatar>
+          </template>
+          <v-card
+            color="#fff"
+            @click="quesGoTo(item.questionID)"
+            style="cursor: pointer;"
+          >
+            <v-card-title style="background-color:#E3F2FD">
+              <span class="title font-weight-light" >{{item.question}}</span>
+            </v-card-title>
+            <v-card-text class="font-weight-light" v-html="mdtoHtml(item.detail)"/>
+            <v-divider/>
+            <v-card-actions>
+              <v-list-tile class="grow">
+                <v-list-tile-content class="hidden-sm-and-down">
+                  <v-list-tile-title>{{item.showtime}}</v-list-tile-title>
+                </v-list-tile-content>
+                <v-layout
+                  align-center
+                  justify-end
+                >
+                  <v-icon color="red">favorite</v-icon>&nbsp;
+                  <span>{{item.star}}</span>&nbsp;
+                  <v-icon color="black">remove_red_eye</v-icon>&nbsp;
+                  <span>{{item.pageviews}}</span>
+                </v-layout>
+              </v-list-tile>
+            </v-card-actions>
+          </v-card>
+        </v-timeline-item>
+      </v-slide-x-reverse-transition>
+    </v-timeline>
+    <v-snackbar
+      v-model="snackbar"
+      :timeout="2000"
+      top
+    >
+      {{ text }}
+      <v-btn
+        color="pink"
+        flat
+        @click="snackbar = false"
+      >
+        Close
+      </v-btn>
+    </v-snackbar>
+  </v-layout>
 </template>
 
 <script>
-    import {mavonEditor} from 'mavon-editor'
-
-    export default {
-        name: 'home',
-        data () {
-            return {
-                ques: [],
-                clientHeight2:'',
-                step:10,
-                page:1,
-                spinShow:true,
-                isNone:false
+  import {mavonEditor} from 'mavon-editor';
+  export default {
+    data:()=>({
+      page:1,
+      step:10,
+      snackbar:false,
+      scroll:false,
+      text:'',
+      ques:[],
+      colors:['red','pink','indigo','cyan','teal','lime','green','orange','brown','grey']
+    }),
+    created(){
+      this.getQues();
+    },
+    methods:{
+      mdtoHtml(detail){
+        var md=mavonEditor.getMarkdownIt();
+        return md.render(String(detail));
+      },
+      quesGoTo(id){
+        this.$router.push(`/question/${id}`);
+      },
+      getQues(){
+        this.$axios.post("question/questionList",{p:this.page,num:this.step})
+        .then(function(response){
+            if(response.data.length===0){
+                this.scroll=false;
+                this.text='已经到底了';
+                this.snackbar=true;
+                return;
             }
-        },
-        created(){
-            this.getQues();
-        }
-        ,
-        methods: {
-            handleReachBottom () {
-                return new Promise(resolve => {
-                    setTimeout(() => {
-                        this.getQues();
-                        resolve();
-                    }, 1000);
-                });
-            },
-            mdtoHtml(detail){
-                var md=mavonEditor.getMarkdownIt();
-                return md.render(detail.toString());
-            },
-            handlegoTo:function(id){
-                return `/question/${id}`
-            },
-            getQues(){
-                this.$axios.post("question/questionList",{p:this.page,num:this.step})
-                .then(function(response){
-                    if(response.data.length===0){
-                        this.$Message.info('已经到底了');
-                        return;
-                    }
-                    response.data.forEach(q => {
-                        const que={};
-                        que.question=q.question;
-                        que.detail=q.detail;
-                        que.questionID=q.questionID;
-                        this.ques.push(que);
-                    });
-                    if(this.ques.length===0){
-                        this.isNone=true;
-                    }else{
-                        this.page=this.page+1;
-                    }
-                    this.spinShow=false;
-                }.bind(this));
+            response.data.forEach(q => {
+                const que={};
+                que.question=q.question;
+                que.detail=q.detail;
+                que.questionID=q.questionID;
+                que.showtime=q.showTime;
+                que.username=q.userName;
+                que.star=q.star;
+                que.pageviews=q.pageviews;
+                que.userID=q.userID;
+                this.ques.push(que);
+            });
+            this.page=this.page+1;
+            if(this.ques.length===0){
+              this.scroll=false;
+            }else{
+              this.scroll=true;
             }
-        },        
-        mounted(){
-            this.clientHeight2 = `${document.documentElement.clientHeight}`-60
-            window.onresize = function temp() {
-                this.clientHeight2 = `${document.documentElement.clientHeight}`;
-            };
+        }.bind(this));
+      },
+      onScroll () {
+        if(window.pageYOffset + window.innerHeight >= document.documentElement.scrollHeight &&this.scroll){
+          this.getQues();
         }
+      },
+      itemColor(i){
+        var index=parseInt(i);
+        if(isNaN(index)){
+          index=0;
+        }
+        return this.colors[index%10]+' lighten-3';
+      }
     }
-    
+  }
 </script>
