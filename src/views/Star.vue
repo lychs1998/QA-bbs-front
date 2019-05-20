@@ -2,7 +2,16 @@
   <v-layout
     justify-left
     v-scroll="onScroll"
+    column
     >
+    <v-toolbar flat dense color="white">
+      <v-btn icon  @click="goBack()" small style="margin:0px;">
+        <v-icon>arrow_back</v-icon>
+      </v-btn>
+      <v-breadcrumbs style="padding:10px" divider=">" v-if="this.$route.path!=='/'" :items="breadcrumb"/>
+    </v-toolbar>
+    <v-divider/>
+    <div style="padding:10px">
     <v-timeline dense clipped style="width:100%" >
       <v-slide-x-reverse-transition
         group
@@ -15,7 +24,7 @@
           fill-dot
         >
           <template v-slot:icon>
-            <v-avatar style="color:#fff" >
+            <v-avatar  style="cursor: pointer;color:#fff" @click="userGoTo(item.userID)">
               {{item.username}}
             </v-avatar>
           </template>
@@ -44,6 +53,7 @@
         </v-timeline-item>
       </v-slide-x-reverse-transition>
     </v-timeline>
+    </div>
     <v-snackbar
       v-model="snackbar"
       :timeout="2000"
@@ -60,7 +70,6 @@
     </v-snackbar>
   </v-layout>
 </template>
-
 <script>
   import {mavonEditor} from 'mavon-editor';
   export default {
@@ -71,7 +80,7 @@
       scroll:false,
       text:'',
       answers:[],
-      colors:['red','pink','indigo','cyan','teal','lime','green','orange','brown','grey']
+      colors:['red','pink','indigo','cyan','teal','lime','green','orange','brown','blue-grey']
     }),
     created(){
       this.getAns();
@@ -85,15 +94,17 @@
         this.$router.push(`/question/${id}`);
       },
       getAns(){
-        this.$axios.post("star_answer/salist",{p:this.page,num:this.step,token:this.$cookie.get('token')})
+        const mem = require('mem');
+        return mem(function() {
+        this.$axios.post("starAnswer/salist",{p:this.page,num:this.step,token:this.$cookie.get('token')})
         .then(function(response){
-            if(response.data.length===0){
+            if(response.data.starAnswers.length===0){
                 this.scroll=false;
                 this.text='已经到底了';
                 this.snackbar=true;
                 return;
             }
-            response.data.forEach(q => {
+            response.data.starAnswers.forEach(q => {
                 const ans={};
                 ans.answer=q.answer.answer;
                 ans.detail=q.answer.detail;
@@ -105,16 +116,17 @@
                 ans.userID=q.answer.userID;
                 this.answers.push(ans);
             });
-            this.page=this.page+1;
             if(this.answers.length===0){
               this.scroll=false;
             }else{
+              this.page=this.page+1;
               this.scroll=true;
             }
         }.bind(this));
+        }.bind(this), {maxAge: 5000})();
       },
       onScroll () {
-        if(window.pageYOffset + window.innerHeight >= document.documentElement.scrollHeight && this.scroll){
+        if(this.scroll&&window.pageYOffset + window.innerHeight >= document.documentElement.scrollHeight){
           this.getAns();
         }
       },
@@ -124,6 +136,26 @@
           index=0;
         }
         return this.colors[index%10]+' lighten-3';
+      },
+      goBack(){
+        this.$router.go(-1)
+      },
+      userGoTo(id){
+        this.$router.push(`/home/${id}`);
+      },
+    },
+    computed:{
+      breadcrumb(){
+        var res=[];
+        const data=this.$route.meta.breadcrumb;
+        data.forEach(e => {
+          const item={};
+          item.text=e.name;
+          item.to=e.path;
+          item.disabled=(e.path==='#');
+          res.push(item);
+        });
+        return res;
       }
     }
   }

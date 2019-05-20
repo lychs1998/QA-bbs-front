@@ -13,6 +13,33 @@
         >
           <v-layout row wrap pt-3>
             <v-flex xs12 lg4>
+              <strong>v0.1.2 Beta版 2019-5-20</strong>
+            </v-flex>
+            <v-flex xs12 lg4>
+              <strong>版本说明</strong>
+              <div class="caption">
+                <li>添加用户主页，可点击用户头像进入他人主页</li>
+                <li>后端重构，修复重复创建连接池的错误</li>
+                <li>首页可以按收藏数进行排序了</li>
+                <li>修复时间显示异常的问题</li>
+                <li>优化修改密码和登录的交互体验</li>
+                <li>侧边栏添加开发经验分享和BUG反馈快捷入口</li>
+              </div>
+            </v-flex>
+            <v-flex xs12 lg4>
+              <strong>Team</strong>
+              <div class="caption">
+                <li>陈胡数、潘皓、陈达</li>
+              </div>
+            </v-flex>
+          </v-layout>
+        </v-timeline-item>
+        <v-timeline-item
+          color="pink"
+          small
+        >
+          <v-layout row wrap pt-3>
+            <v-flex xs12 lg4>
               <strong>v0.1.1 Beta版 2019-5-13</strong>
             </v-flex>
             <v-flex xs12 lg4>

@@ -7,7 +7,7 @@ export default new Router({
   routes: [
     {
       path: '/',
-      name: 'home',
+      name: 'index',
       meta:{
        needLogin:false,
        breadcrumb:[
@@ -18,7 +18,7 @@ export default new Router({
        ],
        login:false
       },
-      component: () => import('./views/Home.vue')
+      component: () => import('./views/Index.vue')
     },
     {
       path:'/login',
@@ -38,6 +38,25 @@ export default new Router({
         login:true
       },
       component:() => import('./views/Login.vue')
+    },
+    {
+      path: '/home/:id',
+      name: 'home',
+      meta:{
+        needLogin:false,
+        breadcrumb:[
+          {
+            name:'首页',
+            path:'/'
+          },
+          {
+            name:'个人主页',
+            path:'#'
+          }
+        ],
+        login:false
+      },
+      component: () => import('./views/Home.vue')
     },
     {
       path: '/question/:id',
@@ -113,6 +132,24 @@ export default new Router({
         login:false
       },
       component:() => import('./views/Favorite.vue')
+    },{
+      path:'/me',
+      name:'me',
+      meta:{
+        needLogin:true,
+        breadcrumb:[
+          {
+            name:'首页',
+            path:'/'
+          },
+          {
+            name:'我的主页',
+            path:'#'
+          }
+        ],
+        login:false
+      },
+      component:() => import('./views/Me.vue')
     },
     {
       path:'/star',

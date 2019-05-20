@@ -18,7 +18,7 @@
       >
       </v-text-field>
       <v-list dense>
-        <v-list-tile v-for="item in menu" @click="goTo(item.name)">
+        <v-list-tile v-for="item in menu" :key="item.name" @click="goTo(item.name)">
           <v-list-tile-action>
             <v-icon>{{item.icon}}</v-icon>
           </v-list-tile-action>
@@ -26,14 +26,27 @@
             <v-list-tile-title>{{item.text}}</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
+        <v-list-tile to="/question/35">
+          <v-list-tile-action>
+            <v-icon>class</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>BUG反馈</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
+        <v-list-tile to="/question/97">
+          <v-list-tile-action>
+            <v-icon>question_answer</v-icon>
+          </v-list-tile-action>
+          <v-list-tile-content>
+            <v-list-tile-title>经验分享</v-list-tile-title>
+          </v-list-tile-content>
+        </v-list-tile>
       </v-list>
     </v-navigation-drawer>
     <v-toolbar color="blue" dark fixed app clipped-left>
       <v-toolbar-side-icon @click.stop="drawer = !drawer" class="hidden-lg-and-up"></v-toolbar-side-icon>
-      <v-btn icon v-if="this.$route.path!=='/'" @click="goBack()">
-        <v-icon>arrow_back</v-icon>
-      </v-btn>
-      <v-toolbar-title class="hidden-md-and-down">ZUCC问答论坛</v-toolbar-title>
+      <v-toolbar-title class="hidden-md-and-down">ZUCC问答论坛 (请提和课程相关问题，BUG反馈请去指定问题下回复)</v-toolbar-title>
       <v-spacer></v-spacer>
       <div v-if="isLogin">
         <v-tooltip bottom>
@@ -77,10 +90,6 @@
       </v-btn>
     </v-toolbar>
     <v-content>
-      <v-breadcrumbs style="padding:15px" divider="/">
-        <v-breadcrumbs-item style="color:#eee" :to="{ path: p.path }" v-for="p in breadcrumb" :disabled="p.path==='#'">{{p.name}}</v-breadcrumbs-item>
-      </v-breadcrumbs>
-      <v-divider/>
       <v-bottom-sheet v-model="sheet" v-if="this.$route.path==='/'">
         <v-card>
           <v-container>
@@ -93,7 +102,7 @@
               ></v-text-field>
                 <v-subheader>问题描述</v-subheader>
                 <mavon-editor ref=md class="hidden-sm-and-down" @imgAdd="$imgAdd"  :boxShadow="false" :externalLink="false" :toolbars="toolbars" style="height:300px;width:100%;"  v-model="formData.detail"></mavon-editor>
-                <mavon-editor ref=md class="hidden-sm-and-up" @imgAdd="$imgAdd" defaultOpen="edit" :boxShadow="false" :subfield="false" :externalLink="false"  :toolbars="{imagelink: true,preview: true}"  style="width:100%;min-width:0px;height:300px;"  v-model="formData.detail"></mavon-editor>
+                <mavon-editor ref=md class="hidden-md-and-up" @imgAdd="$imgAdd" defaultOpen="edit" :boxShadow="false" :subfield="false" :externalLink="false"  :toolbars="{imagelink: true,preview: true}"  style="width:100%;min-width:0px;height:300px;"  v-model="formData.detail"></mavon-editor>
                 <v-card-actions>
                   <v-spacer></v-spacer>
                   <v-btn style="margin-right: 8px" @click="sheet = false">取消</v-btn>
@@ -103,9 +112,7 @@
           </v-container>
         </v-card>
       </v-bottom-sheet>
-      <v-container fluid fill-height>
         <router-view/>
-      </v-container>
         <v-fab-transition v-if="this.$route.path==='/'">
         <v-btn
           style="margin: 0 0 40px 16px;"
@@ -156,9 +163,10 @@ export default {
           tags:''
         },
         menu:[
-          {icon:'home',name:'home',text:'首页'},
-          {icon:'favorite',name:'favorite',text:'我的收藏'},
-          {icon:'star',name:'star',text:'我的赞同'}
+          {icon:'home',name:'index',text:'首页'},
+          {icon:'favorite',name:'favorite',text:'收藏问题'},
+          {icon:'star',name:'star',text:'赞同回答'},
+          {icon:'account_circle',name:'me',text:'我的主页'},
         ]
       } 
     },
@@ -179,7 +187,7 @@ export default {
             return;
         }
         if(form.question!==''&&form.detail!==''){
-            this.$axios.post("question/addQuestion",{token:this.$cookie.get('token'),question:form.question,detail:form.detail})
+            this.$axios.post("question/addQuestion",{token:this.$cookie.get('token'),question:String(form.question),detail:String(form.detail)})
                 .then(function(response){
                     if(response.data.code==0){
                         this.text='提问成功！';
@@ -194,13 +202,13 @@ export default {
             return;
         }
       },
-      goBack(){
-        this.$router.go(-1)
-      },
       checkCookie(){
           if(this.$cookie.get('token')!==null){
-              this.username=this.$cookie.get('name');
-              this.isLogin=true;
+            this.username=this.$cookie.get('name');
+            this.isLogin=true;
+          }else{
+            this.username='登录';
+            this.isLogin=false;
           }
       },
       logout(){
@@ -231,9 +239,6 @@ export default {
     computed:{
       toolbars(){
         return this.$store.state.toolbars;
-      },
-      breadcrumb(){
-        return this.$route.meta.breadcrumb;
       }
     }
 }
