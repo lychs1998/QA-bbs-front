@@ -173,43 +173,48 @@ export default {
     created(){
         this.initData();
     },
+    watch: {
+      '$route' (to, from) {
+        if(to.params.id!==from.params.id){
+          this.answers=[];
+          this.initData();
+        }
+      }
+    },
     methods:{
         mdtoHtml(detail){
             var md=mavonEditor.getMarkdownIt();
             return md.render(String(detail));
         },
         initData(){
-            const mem = require('mem');
-            return mem(function() {
-            this.questionID=this.$route.params.id;
-            if(this.$cookie.get('token')!==null){
-                this.isNotLogin=false;
-            }
-            this.$axios.post("question/questionDetail",{questionID:parseInt(this.questionID),token:this.$cookie.get('token')})
-            .then(function(response){
-                this.question=response.data.question.question;
-                this.detail=response.data.question.detail;
-                this.pageviews=response.data.question.pageviews;
-                this.userID=response.data.question.userID;
-                this.username=response.data.question.userName;
-                this.showtime=response.data.question.showTime;
-                this.star=response.data.question.star;
-                this.starType=(response.data.question.starOrNot===1)?'favorite':'favorite_border';
-                this.isStar=(response.data.question.starOrNot===1)
-                response.data.question.answers.forEach(e => {
-                    var ans={};
-                    ans.answerID=e.answerID;
-                    ans.userID=e.userID;
-                    ans.username=e.userName;
-                    ans.answer=e.answer;
-                    ans.showtime=e.showTime;
-                    ans.star=e.star;
-                    ans.isStar=(e.starOrNot===1);
-                    ans.starType=(e.starOrNot===1) ? 'star':'star_border';
-                    this.answers.push(ans);
-                });
-            }.bind(this));
-            }.bind(this), {maxAge: 1000})();
+          this.questionID=this.$route.params.id;
+          if(this.$cookie.get('token')!==null){
+              this.isNotLogin=false;
+          }
+          this.$axios.post("question/questionDetail",{questionID:parseInt(this.questionID),token:this.$cookie.get('token')})
+          .then(function(response){
+              this.question=response.data.question.question;
+              this.detail=response.data.question.detail;
+              this.pageviews=response.data.question.pageviews;
+              this.userID=response.data.question.userID;
+              this.username=response.data.question.userName;
+              this.showtime=response.data.question.showTime;
+              this.star=response.data.question.star;
+              this.starType=(response.data.question.starOrNot===1)?'favorite':'favorite_border';
+              this.isStar=(response.data.question.starOrNot===1)
+              response.data.question.answers.forEach(e => {
+                  var ans={};
+                  ans.answerID=e.answerID;
+                  ans.userID=e.userID;
+                  ans.username=e.userName;
+                  ans.answer=e.answer;
+                  ans.showtime=e.showTime;
+                  ans.star=e.star;
+                  ans.isStar=(e.starOrNot===1);
+                  ans.starType=(e.starOrNot===1) ? 'star':'star_border';
+                  this.answers.push(ans);
+              });
+          }.bind(this));
         },
         replyQues(){
             if(this.isNotLogin){
@@ -231,7 +236,9 @@ export default {
                   this.text="回答失败！";
                   this.snackbar=true;
                 }
-                this.$router.go(0);
+                this.answers=[];
+                this.reply='';
+                this.initData();
             }.bind(this));
         },
         changeType(flag){

@@ -33,7 +33,7 @@
                             <v-card>
                                 <v-card-title>
                                     <span><v-icon color="amber">star</v-icon>
-                                    {{favorite}}
+                                    {{star}}
                                     </span>
                                 </v-card-title>
                             </v-card>
@@ -113,7 +113,6 @@ export default {
             favorite:0,
             question:0,
             answer:0,
-            pagelength:10,
             type:'0',
             data:[],
             questions:[],
@@ -123,7 +122,20 @@ export default {
         }
     },
     watch:{
-        'type':'initData'
+        'type':'initData',
+        '$route' (to, from) {
+            if(to.params.id!==from.params.id){
+                this.star=0;
+                this.favorite=0;
+                this.answer=0;
+                this.question=0;
+                this.answers=[];
+                this.questions=[];
+                this.initQuestionData();
+                this.initAnswerData();
+                this.initData();
+            }
+        }
     },
     created(){
         this.initQuestionData();
@@ -131,49 +143,43 @@ export default {
     },
     methods:{
         initQuestionData(){
-            const mem = require('mem');
-            return mem(function() {
-                this.userID=this.$route.params.id;
-                this.$axios.post("user/home",{userID:this.userID,type:0})
-                .then(function(response){
-                    this.username=response.data.userName;
-                    response.data.questions.forEach(q => {
-                        const que={};
-                        que.title=q.question;
-                        que.detail=q.detail;
-                        que.questionID=q.questionID;
-                        que.showtime=q.showTime;
-                        que.username=q.userName;
-                        que.star=q.star;
-                        this.favorite+=q.star;
-                        this.question++;
-                        this.questions.push(que);
-                    });
-                    this.initData();
-                }.bind(this));
-            }.bind(this), {maxAge: 5000})();
+            this.userID=this.$route.params.id;
+            this.$axios.post("user/home",{userID:this.userID,type:0})
+            .then(function(response){
+                this.username=response.data.userName;
+                response.data.questions.forEach(q => {
+                    const que={};
+                    que.title=q.question;
+                    que.detail=q.detail;
+                    que.questionID=q.questionID;
+                    que.showtime=q.showTime;
+                    que.username=q.userName;
+                    que.star=q.star;
+                    this.favorite+=q.star;
+                    this.question++;
+                    this.questions.push(que);
+                });
+                this.initData();
+            }.bind(this));
         },
         initAnswerData(){
-        const mem = require('mem');
-            return mem(function() {
-                this.userID=this.$route.params.id;
-                this.$axios.post("user/home",{userID:this.userID,type:1})
-                .then(function(response){
-                    response.data.answers.forEach(q => {
-                        const que={};
-                        que.title='';
-                        que.detail=q.answer;
-                        que.questionID=q.questionID;
-                        que.showtime=q.showTime;
-                        que.username=q.userName;
-                        que.star=q.star;
-                        this.star+=q.star;
-                        this.answer++;
-                        this.answers.push(que);
-                    });
-                    this.initData();
-                }.bind(this));
-            }.bind(this), {maxAge: 5000})();
+            this.userID=this.$route.params.id;
+            this.$axios.post("user/home",{userID:this.userID,type:1})
+            .then(function(response){
+                response.data.answers.forEach(q => {
+                    const que={};
+                    que.title='';
+                    que.detail=q.answer;
+                    que.questionID=q.questionID;
+                    que.showtime=q.showTime;
+                    que.username=q.userName;
+                    que.star=q.star;
+                    this.star+=q.star;
+                    this.answer++;
+                    this.answers.push(que);
+                });
+                this.initData();
+            }.bind(this));
         },
         initData(){
             if(this.type==='0'){

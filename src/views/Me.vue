@@ -33,7 +33,7 @@
                 <v-card>
                   <v-card-title>
                     <span><v-icon color="amber">star</v-icon>
-                      {{favorite}}
+                      {{star}}
                     </span>
                   </v-card-title>
                 </v-card>
@@ -130,46 +130,40 @@ export default {
     },
     methods:{
       initQuestionData(){
-        const mem = require('mem');
-          return mem(function() {
-          this.$axios.post("user/home",{token:this.$cookie.get('token'),type:0})
-          .then(function(response){
-              response.data.questions.forEach(q => {
-                  const que={};
-                  que.title=q.question;
-                  que.detail=q.detail;
-                  que.questionID=q.questionID;
-                  que.showtime=q.showTime;
-                  que.username=q.userName;
-                  que.star=q.star;
-                  this.favorite+=q.star;
-                  this.question++;
-                  this.questions.push(que);
-              });
-              this.initData();
-          }.bind(this));
-          }.bind(this), {maxAge: 5000})();
+        this.$axios.post("user/home",{token:this.$cookie.get('token'),type:0})
+        .then(function(response){
+            response.data.questions.forEach(q => {
+                const que={};
+                que.title=q.question;
+                que.detail=q.detail;
+                que.questionID=q.questionID;
+                que.showtime=q.showTime;
+                que.username=q.userName;
+                que.star=q.star;
+                this.favorite+=q.star;
+                this.question++;
+                this.questions.push(que);
+            });
+            this.initData();
+        }.bind(this));
       },
       initAnswerData(){
-        const mem = require('mem');
-          return mem(function() {
-          this.$axios.post("user/home",{token:this.$cookie.get('token'),type:1})
-          .then(function(response){
-              response.data.answers.forEach(q => {
-                  const que={};
-                  que.title='';
-                  que.detail=q.answer;
-                  que.questionID=q.questionID;
-                  que.showtime=q.showTime;
-                  que.username=q.userName;
-                  que.star=q.star;
-                  this.star+=q.star;
-                  this.answer++;
-                  this.answers.push(que);
-              });
-              this.initData();
-          }.bind(this));
-          }.bind(this), {maxAge: 5000})();
+        this.$axios.post("user/home",{token:this.$cookie.get('token'),type:1})
+        .then(function(response){
+            response.data.answers.forEach(q => {
+                const que={};
+                que.title='';
+                que.detail=q.answer;
+                que.questionID=q.questionID;
+                que.showtime=q.showTime;
+                que.username=q.userName;
+                que.star=q.star;
+                this.star+=q.star;
+                this.answer++;
+                this.answers.push(que);
+            });
+            this.initData();
+        }.bind(this));
       },
       initData(){
         if(this.type==='0'){

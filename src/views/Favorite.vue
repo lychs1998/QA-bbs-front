@@ -3,6 +3,7 @@
     justify-left
     v-scroll="onScroll"
     column
+    ref="scrollDiv"
     >
     <v-toolbar flat dense color="white">
       <v-btn icon  @click="goBack()" small style="margin:0px;">
@@ -33,7 +34,7 @@
             @click="quesGoTo(item.questionID)"
             style="cursor: pointer;"
           >
-            <v-card-title style="background-color:#E0F7FA">
+            <v-card-title style="background-color:#E3F2FD">
               <span class="title font-weight-bold">{{item.question}}</span>
             </v-card-title>
             <v-card-text class="font-weight-light" v-html="mdtoHtml(item.detail)"/>
@@ -100,8 +101,6 @@
         this.$router.push(`/question/${id}`);
       },
       getQues(){
-        const mem = require('mem');
-        return mem(function() {
         this.$axios.post("starQuestion/sqlist",{p:this.page,num:this.step,token:this.$cookie.get('token')})
         .then(function(response){
             if(response.data.starQuestions.length===0){
@@ -129,11 +128,12 @@
               this.scroll=true;
             }
         }.bind(this));
-        }.bind(this), {maxAge: 5000})();
       },
       onScroll () {
-        if(this.scroll&&window.pageYOffset + window.innerHeight >= document.documentElement.scrollHeight ){
-          this.getQues();
+        var scrollDiv=this.$refs.scrollDiv;
+        let bottomOfWindow = (scrollDiv.offsetHeight - document.documentElement.scrollTop -window.innerHeight <= 0)
+        if(this.scroll && bottomOfWindow){
+            this.getQues();
         }
       },
       itemColor(i){

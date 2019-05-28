@@ -78,6 +78,25 @@ export default new Router({
       component: () => import('./views/Question.vue')
     },
     {
+      path: '/search/:keyword',
+      name: 'search',
+      meta:{
+        needLogin:false,
+        breadcrumb:[
+          {
+            name:'首页',
+            path:'/'
+          },
+          {
+            name:'搜索',
+            path:'#'
+          }
+        ],
+        login:false
+      },
+      component: () => import('./views/Search.vue')
+    },
+    {
       path:'/changePwd',
       name:'changePwd',
       meta:{

@@ -4,9 +4,10 @@
     justify-left
     v-scroll="onScroll"
     column
+    ref="scrollDiv"
     >
     <v-flex>
-    <v-btn-toggle v-model="type" mandatory>
+    <v-btn-toggle v-model="type" @change="initData()" mandatory>
       <v-btn value='0' flat small>
         时间排序
       </v-btn>
@@ -38,7 +39,7 @@
             style="cursor: pointer;"
           >
             <v-card-title style="background-color:#E3F2FD">
-              <span class="title font-weight-bold" >{{item.question}}</span>
+              <span >{{item.question}}</span>
             </v-card-title>
             <v-card-text class="font-weight-light" v-html="mdtoHtml(item.detail)"/>
             <v-divider/>
@@ -105,15 +106,13 @@
         this.$router.push(`/question/${id}`);
       },
       getQues(){
-          const mem = require('mem');
-          return mem(function() {
           this.$axios.post("question/questionList",{p:this.page,num:this.step,type:parseInt(this.type)})
           .then(function(response){
               if(response.data.length===0){
-                  this.scroll=false;
-                  this.text='已经到底了';
-                  this.snackbar=true;
-                  return;
+                this.scroll=false;
+                this.text='已经到底了';
+                this.snackbar=true;
+                return;
               }
               response.data.questions.forEach(q => {
                   const que={};
@@ -127,18 +126,20 @@
                   que.userID=q.userID;
                   this.ques.push(que);
               });
-              if(this.ques.length===0){
-                this.scroll=false;
-              }else{
+              if(this.ques.length!==0){
                 this.page=this.page+1;
                 this.scroll=true;
+              }else{
+                this.scroll=false;
               }
           }.bind(this));
-          }.bind(this), {maxAge: 5000})();
       },
       onScroll () {
-        if(this.scroll&&window.pageYOffset + window.innerHeight >= document.documentElement.scrollHeight){
-          this.getQues();
+        var scrollDiv=this.$refs.scrollDiv;
+        let bottomOfWindow = (scrollDiv.offsetHeight - document.documentElement.scrollTop -window.innerHeight <= 0)
+        if(this.scroll && bottomOfWindow){
+            this.scroll=false;
+            this.getQues();
         }
       },
       itemColor(i){
@@ -148,7 +149,7 @@
         }
         return this.colors[index%10]+' lighten-3';
       },
-      overload(){
+      initData(){
         this.ques=[];
         this.page=1;
         this.getQues();
@@ -156,9 +157,6 @@
       userGoTo(id){
         this.$router.push(`/home/${id}`);
       },
-    },
-    watch:{
-      'type':'overload'
     }
   }
 </script>

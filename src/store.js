@@ -1,7 +1,6 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
-
-Vue.use(Vuex)
+Vue.use(Vuex);
 
 export default new Vuex.Store({
   state: {
@@ -32,12 +31,6 @@ export default new Vuex.Store({
       preview: true, // 预览
       navigation: true,
       fullscreen: true,
-   }
-  },
-  mutations: {
-    
-  },
-  actions: {
-
+    },
   }
 })

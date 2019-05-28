@@ -1,5 +1,6 @@
 <template>
   <v-app>
+    <vue-snotify></vue-snotify>
     <v-navigation-drawer
       clipped
       fixed
@@ -10,15 +11,8 @@
         <img style="width:80%" src="./assets/logo.png"/>
       </div>
       <v-divider/>
-      <v-text-field
-        hide-details
-        single-line
-        append-icon="search"
-        disabled
-      >
-      </v-text-field>
       <v-list dense>
-        <v-list-tile v-for="item in menu" :key="item.name" @click="goTo(item.name)">
+        <v-list-tile v-for="item in menu" :key="item.name" :to="item.path">
           <v-list-tile-action>
             <v-icon>{{item.icon}}</v-icon>
           </v-list-tile-action>
@@ -26,7 +20,7 @@
             <v-list-tile-title>{{item.text}}</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
-        <v-list-tile to="/question/35">
+        <v-list-tile :to="{path:'/question/35'}">
           <v-list-tile-action>
             <v-icon>class</v-icon>
           </v-list-tile-action>
@@ -34,7 +28,7 @@
             <v-list-tile-title>BUG反馈</v-list-tile-title>
           </v-list-tile-content>
         </v-list-tile>
-        <v-list-tile to="/question/97">
+        <v-list-tile :to="{path:'/question/97'}">
           <v-list-tile-action>
             <v-icon>question_answer</v-icon>
           </v-list-tile-action>
@@ -46,29 +40,29 @@
     </v-navigation-drawer>
     <v-toolbar color="blue" dark fixed app clipped-left>
       <v-toolbar-side-icon @click.stop="drawer = !drawer" class="hidden-lg-and-up"></v-toolbar-side-icon>
-      <v-toolbar-title class="hidden-md-and-down">ZUCC问答论坛 (请提和课程相关问题，BUG反馈请去指定问题下回复)</v-toolbar-title>
+      <v-toolbar-title  class="hidden-md-and-down">ZUCC问答论坛</v-toolbar-title>
       <v-spacer></v-spacer>
+      <v-text-field
+        flat
+        solo-inverted
+        hide-details
+        prepend-inner-icon="search"
+        label="搜索一下~"
+        v-on:keyup.enter="doSearch()"
+        v-model="keyword"
+        style="margin-right:20px;max-width:500px"
+      ></v-text-field>
       <div v-if="isLogin">
-        <v-tooltip bottom>
-          <template v-slot:activator="{ on }">
-            <v-btn icon large v-on="on">
-              <v-icon tile>
-                notifications
-              </v-icon>
-            </v-btn>
-          </template>
-          <span>该功能暂未开放</span>
-        </v-tooltip>
       <v-menu 
         offset-y
         bottom
       >
-        <template v-slot:activator="{ on }">
+        <template v-slot:activator="{on}">
           <v-btn
             icon large
             v-on="on"
           >
-            <v-avatar size="32px"  tile>
+            <v-avatar size="32px" tile>
               {{username}}
             </v-avatar>
           </v-btn>
@@ -143,11 +137,12 @@
     </v-snackbar>
     </v-content>
     <v-footer color="blue lighten-2" app>
-      <a @click="goTo('release')"><span class="white--text">&nbsp;&copy; 2019 v0.1.1 beta版</span></a>
+      <a @click="goTo('release')"><span class="white--text">&nbsp;&copy; 2019 v0.1.3 beta版</span></a>
     </v-footer>
   </v-app>
 </template>
 <script>
+import {mavonEditor} from 'mavon-editor'
 export default {
     data() {
       return {
@@ -162,11 +157,12 @@ export default {
           detail:'',
           tags:''
         },
+        keyword:'',
         menu:[
-          {icon:'home',name:'index',text:'首页'},
-          {icon:'favorite',name:'favorite',text:'收藏问题'},
-          {icon:'star',name:'star',text:'赞同回答'},
-          {icon:'account_circle',name:'me',text:'我的主页'},
+          {icon:'home',path:{path:'/'},text:'首页'},
+          {icon:'favorite',path:{path:'/favorite'},text:'收藏问题'},
+          {icon:'star',path:{path:'/star'},text:'赞同回答'},
+          {icon:'account_circle',path:{path:'/me'},text:'我的主页'},
         ]
       } 
     },
@@ -202,10 +198,31 @@ export default {
             return;
         }
       },
+      newSnotify(data){
+        const body=this.mdtoHtml(String(data.answer).substring(0,255));
+        const html=`<a href="#/question/${data.questionID}" style="text-decoration:none;"><div class="snotifyToast__title">有新的回答</div>
+        <div class="snotifyToast__body">${body}</div></a>`;
+        this.$snotify.html(html,{
+          timeout:5000,
+          showProgressBar: true,
+          closeOnClick: true,
+          pauseOnHover: true,
+        })
+      },
       checkCookie(){
           if(this.$cookie.get('token')!==null){
             this.username=this.$cookie.get('name');
             this.isLogin=true;
+            this.$socket.removeAllListeners() 
+            this.$socket.emit('login',String(this.$cookie.get('token')));
+            this.$socket.on('reply',function(msg) {
+              console.log(msg);
+              if(msg.length>0){
+                msg.forEach(data => {
+                  this.newSnotify(data);
+                });
+              }
+            }.bind(this))
           }else{
             this.username='登录';
             this.isLogin=false;
@@ -234,6 +251,16 @@ export default {
               this.$refs.md.$img2Url(pos,url);
             }
         }.bind(this))
+      },
+      mdtoHtml(detail){
+        var md=mavonEditor.getMarkdownIt();
+        return md.render(String(detail));
+      },
+      doSearch(){
+        if(this.keyword!==''){
+          this.$router.push('/search/'+this.keyword);
+          this.keyword='';
+        }
       }
     },
     computed:{

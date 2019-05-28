@@ -3,6 +3,7 @@
     justify-left
     v-scroll="onScroll"
     column
+    ref="scrollDiv"
     >
     <v-toolbar flat dense color="white">
       <v-btn icon  @click="goBack()" small style="margin:0px;">
@@ -94,8 +95,6 @@
         this.$router.push(`/question/${id}`);
       },
       getAns(){
-        const mem = require('mem');
-        return mem(function() {
         this.$axios.post("starAnswer/salist",{p:this.page,num:this.step,token:this.$cookie.get('token')})
         .then(function(response){
             if(response.data.starAnswers.length===0){
@@ -123,11 +122,12 @@
               this.scroll=true;
             }
         }.bind(this));
-        }.bind(this), {maxAge: 5000})();
       },
       onScroll () {
-        if(this.scroll&&window.pageYOffset + window.innerHeight >= document.documentElement.scrollHeight){
-          this.getAns();
+        var scrollDiv=this.$refs.scrollDiv;
+        let bottomOfWindow = (scrollDiv.offsetHeight - document.documentElement.scrollTop -window.innerHeight <= 0)
+        if(this.scroll && bottomOfWindow){
+            this.getQues();
         }
       },
       itemColor(i){

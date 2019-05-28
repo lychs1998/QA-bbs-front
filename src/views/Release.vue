@@ -7,8 +7,32 @@
         dense
         style="width:100%"
       > 
-        <v-timeline-item
+              <v-timeline-item
           color="pink"
+          small
+        >
+          <v-layout row wrap pt-3>
+            <v-flex xs12 lg4>
+              <strong>v0.1.3 Beta版 2019-5-26</strong>
+            </v-flex>
+            <v-flex xs12 lg4>
+              <strong>版本说明</strong>
+              <div class="caption">
+                <li>增加搜索功能</li>
+                <li>修复与优化滚动加载判定</li>
+                <li>自己的问题有新的回答会有实时通知</li>
+              </div>
+            </v-flex>
+            <v-flex xs12 lg4>
+              <strong>Team</strong>
+              <div class="caption">
+                <li>陈胡数、潘皓、陈达</li>
+              </div>
+            </v-flex>
+          </v-layout>
+        </v-timeline-item>
+        <v-timeline-item
+          color="teal lighten-3"
           small
         >
           <v-layout row wrap pt-3>
@@ -24,6 +48,7 @@
                 <li>修复时间显示异常的问题</li>
                 <li>优化修改密码和登录的交互体验</li>
                 <li>侧边栏添加开发经验分享和BUG反馈快捷入口</li>
+                <li>修复了问题详情与问题详情间无法转跳的问题</li>
               </div>
             </v-flex>
             <v-flex xs12 lg4>
