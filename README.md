@@ -2,6 +2,9 @@
 
 [![GitHub release](https://img.shields.io/github/release/lychs1998/QA-bbs-front.svg)]()[![GitHub release](https://img.shields.io/aur/license/nam.svg?color=success)]()
 
+后端消息推送与搜索服务开源地址：[EMS-Message-push](https://github.com/lychs1998/EMS-Message-push)
+后端SSM开源地址：[QA-back-end](https://github.com/Stanph/back-end)
+
 ## 项目简介
 
 核心功能为课堂问答，学生和老师可以在此提问与回答。
